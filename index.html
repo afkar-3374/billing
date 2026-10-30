@@ -30,16 +30,15 @@
       <details id="bizDetails">
         <summary>
           <h2>Your business</h2>
-          <span class="hint" id="bizSummary">Name, address, GSTIN, payment details</span>
+          <span class="hint" id="bizSummary">Name, address, phone, payment details</span>
         </summary>
         <div class="grid two">
           <label>Business name<input data-biz="name" autocomplete="organization"></label>
-          <label>GSTIN<input data-biz="gstin" placeholder="Optional"></label>
           <label class="span">Address<textarea data-biz="address" rows="2"></textarea></label>
           <label>Phone<input data-biz="phone" inputmode="tel"></label>
           <label>Email<input data-biz="email" type="email"></label>
           <label>Website<input data-biz="website"></label>
-          <label>Invoice prefix<input data-biz="prefix"></label>
+          <label>Bill number prefix<input data-biz="prefix"></label>
           <label class="span">Payment details (UPI / bank)<textarea data-biz="payment" rows="2" placeholder="UPI: name@bank · A/c 1234 · IFSC ABCD0001234"></textarea></label>
         </div>
         <p class="hint">Saved on this device and reused for every bill.</p>
@@ -53,7 +52,6 @@
           <label>Customer name<input data-bill="custName" autocomplete="off"></label>
           <label>Phone<input data-bill="custPhone" inputmode="tel"></label>
           <label>Address<textarea data-bill="custAddress" rows="2"></textarea></label>
-          <label>Customer GSTIN<input data-bill="custGstin" placeholder="Optional"></label>
         </div>
       </section>
       <section class="card">
@@ -97,18 +95,6 @@
             <select data-bill="discountType" aria-label="Discount type"><option value="amt">₹</option><option value="pct">%</option></select>
           </span>
         </div>
-        <div class="row field">
-          <span>GST</span>
-          <span class="pair">
-            <input data-bill="tax" type="number" min="0" step="any" inputmode="decimal" placeholder="0">
-            <span class="unit">%</span>
-          </span>
-        </div>
-        <div class="row field" id="taxModeRow" hidden>
-          <span>GST type</span>
-          <select data-bill="taxMode" class="mode"><option value="split">CGST + SGST</option><option value="igst">IGST</option></select>
-        </div>
-        <div class="row sub" id="tTaxRow" hidden><span id="tTaxLabel">GST</span><b id="tTax">₹0.00</b></div>
         <div class="row grand"><span>Grand total</span><b id="tGrand">₹0.00</b></div>
         <p class="words" id="tWords"></p>
         <div class="row field">

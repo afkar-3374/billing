@@ -132,7 +132,6 @@ details[open] summary { margin-bottom: 14px; }
 .totals .pair input { text-align: right; }
 .totals .pair select { width: 64px; flex: none; }
 .totals .unit { color: var(--muted); font-weight: 800; width: 20px; text-align: center; flex: none; }
-.totals select.mode { width: 150px; }
 .totals .grand { border-top: 2px solid var(--line); margin-top: 6px; padding-top: 12px; font-size: 1.25rem; }
 .totals .grand > span:first-child { color: var(--ink); }
 .totals .grand b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }

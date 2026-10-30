@@ -28,7 +28,7 @@
 
   // ---------- state ----------
   const biz = Object.assign(
-    { name: "Electrosparkzz", gstin: "", address: "", phone: "", email: "", website: "electrosparkzz.in", prefix: "ES", payment: "" },
+    { name: "Electrosparkzz", address: "", phone: "", email: "", website: "electrosparkzz.in", prefix: "ES", payment: "" },
     store.get(KEY.biz, {})
   );
   let counter = store.get(KEY.counter, 0);
@@ -38,8 +38,8 @@
   const blankItem = () => ({ desc: "", qty: "1", unit: "", rate: "" });
   const blankBill = () => ({
     number: nextNumber(), date: today(), due: "", status: "Unpaid",
-    custName: "", custPhone: "", custAddress: "", custGstin: "",
-    items: [blankItem()], discount: "", discountType: "amt", tax: "", taxMode: "split", paid: "", notes: "",
+    custName: "", custPhone: "", custAddress: "",
+    items: [blankItem()], discount: "", discountType: "amt", paid: "", notes: "",
   });
 
   let bill = Object.assign(blankBill(), store.get(KEY.draft, {}));
@@ -55,12 +55,9 @@
     const sub = round2(lines.reduce((a, n) => a + n, 0));
     let disc = b.discountType === "pct" ? sub * num(b.discount) / 100 : num(b.discount);
     disc = round2(Math.min(Math.max(disc, 0), sub));
-    const taxable = round2(sub - disc);
-    const taxPct = Math.max(num(b.tax), 0);
-    const tax = round2(taxable * taxPct / 100);
-    const grand = round2(taxable + tax);
+    const grand = round2(sub - disc);
     const paid = round2(Math.max(num(b.paid), 0));
-    return { lines, sub, disc, taxable, taxPct, tax, grand, paid, due: round2(grand - paid) };
+    return { lines, sub, disc, grand, paid, due: round2(grand - paid) };
   }
 
   // ---------- amount in words (Indian system) ----------
@@ -112,10 +109,6 @@
     const t = totals(bill);
     $$(".item", itemsEl).forEach((li, i) => { $(".amt", li).textContent = fmt(t.lines[i] || 0); });
     $("#tSub").textContent = rs(t.sub);
-    $("#tTaxRow").hidden = !t.tax;
-    $("#taxModeRow").hidden = !t.taxPct;
-    $("#tTaxLabel").textContent = `GST (${t.taxPct}%)`;
-    $("#tTax").textContent = rs(t.tax);
     $("#tGrand").textContent = rs(t.grand);
     $("#barTotal").textContent = rs(t.grand);
     $("#tWords").textContent = t.grand ? amountWords(t.grand) : "";
@@ -132,8 +125,8 @@
   }
 
   function bizSummary() {
-    const bits = [biz.name, biz.phone, biz.gstin && "GSTIN " + biz.gstin].filter(Boolean);
-    $("#bizSummary").textContent = bits.length > 1 ? bits.join(" · ") : "Name, address, GSTIN, payment details";
+    const bits = [biz.name, biz.phone].filter(Boolean);
+    $("#bizSummary").textContent = bits.length > 1 ? bits.join(" · ") : "Name, address, phone, payment details";
   }
 
   function renderHistory() {
@@ -289,13 +282,12 @@
       ...(biz.address ? doc.splitTextToSize(biz.address, 95) : []),
       [biz.phone, biz.email].filter(Boolean).join("  ·  "),
       biz.website,
-      biz.gstin && "GSTIN: " + biz.gstin,
     ].filter(Boolean);
     sellerLines.forEach((l) => { doc.text(l, M, y); y += 4; });
 
     // Title + meta (right)
     set(20, "bold");
-    doc.text(t.tax ? "TAX INVOICE" : "INVOICE", R, 20, { align: "right" });
+    doc.text("BILL", R, 20, { align: "right" });
     let ry = 29;
     const meta = [["Bill No.", b.number], ["Date", fmtDate(b.date)], ["Due date", fmtDate(b.due)], ["Status", b.status]];
     meta.filter(([, v]) => v).forEach(([k, v]) => {
@@ -309,7 +301,6 @@
     const custLines = [
       ...(b.custAddress ? doc.splitTextToSize(b.custAddress, W - 2 * M - 12) : []),
       b.custPhone && "Phone: " + b.custPhone,
-      b.custGstin && "GSTIN: " + b.custGstin,
     ].filter(Boolean);
     const boxH = 13 + custLines.length * 4.2;
     doc.setFillColor(...C.soft);
@@ -353,11 +344,6 @@
     // Totals (right) and words/notes (left)
     const tRows = [["Subtotal", rs(t.sub)]];
     if (t.disc) tRows.push([b.discountType === "pct" ? `Discount (${num(b.discount)}%)` : "Discount", "- " + rs(t.disc)]);
-    if (t.tax && b.taxMode === "igst") tRows.push([`IGST (${t.taxPct}%)`, rs(t.tax)]);
-    else if (t.tax) {
-      tRows.push([`CGST (${t.taxPct / 2}%)`, rs(t.tax / 2)]);
-      tRows.push([`SGST (${t.taxPct / 2}%)`, rs(t.tax - round2(t.tax / 2))]);
-    }
     const notesW = 100;
     const wordsLines = doc.splitTextToSize(amountWords(t.grand), notesW);
     const payLines = biz.payment ? doc.splitTextToSize(biz.payment, notesW) : [];
