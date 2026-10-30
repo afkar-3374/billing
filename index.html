@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electrosparkzz Billing</title>
+  <meta name="description" content="Create Electrosparkzz bills and download them as PDF.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./">
+      <img src="assets/es-mark.png" alt="" width="60" height="28">
+      <span>ELECTRO<b>SPARKZZ</b></span>
+    </a>
+    <span class="tag">Billing</span>
+    <div class="top-actions">
+      <button type="button" class="btn ghost" id="newBill">New bill</button>
+      <button type="button" class="btn primary" id="download">Download PDF</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card" id="bizCard">
+      <details id="bizDetails">
+        <summary>
+          <h2>Your business</h2>
+          <span class="hint" id="bizSummary">Name, address, GSTIN, payment details</span>
+        </summary>
+        <div class="grid two">
+          <label>Business name<input data-biz="name" autocomplete="organization"></label>
+          <label>GSTIN<input data-biz="gstin" placeholder="Optional"></label>
+          <label class="span">Address<textarea data-biz="address" rows="2"></textarea></label>
+          <label>Phone<input data-biz="phone" inputmode="tel"></label>
+          <label>Email<input data-biz="email" type="email"></label>
+          <label>Website<input data-biz="website"></label>
+          <label>Invoice prefix<input data-biz="prefix"></label>
+          <label class="span">Payment details (UPI / bank)<textarea data-biz="payment" rows="2" placeholder="UPI: name@bank · A/c 1234 · IFSC ABCD0001234"></textarea></label>
+        </div>
+        <p class="hint">Saved on this device and reused for every bill.</p>
+      </details>
+    </section>
+
+    <div class="grid two cols">
+      <section class="card">
+        <h2>Bill to</h2>
+        <div class="grid">
+          <label>Customer name<input data-bill="custName" autocomplete="off"></label>
+          <label>Phone<input data-bill="custPhone" inputmode="tel"></label>
+          <label>Address<textarea data-bill="custAddress" rows="2"></textarea></label>
+          <label>Customer GSTIN<input data-bill="custGstin" placeholder="Optional"></label>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Bill details</h2>
+        <div class="grid">
+          <label>Bill number<input data-bill="number"></label>
+          <label>Date<input data-bill="date" type="date"></label>
+          <label>Due date<input data-bill="due" type="date"></label>
+          <label>Status
+            <select data-bill="status">
+              <option>Unpaid</option>
+              <option>Paid</option>
+              <option>Partially paid</option>
+            </select>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Items</h2>
+      <div class="items-head" aria-hidden="true">
+        <span>#</span><span>Description</span><span>Qty</span><span>Unit</span><span>Rate (₹)</span><span>Amount (₹)</span><span></span>
+      </div>
+      <ol class="items" id="items"></ol>
+      <button type="button" class="btn add" id="addItem">+ Add item</button>
+    </section>
+
+    <div class="grid two cols">
+      <section class="card">
+        <h2>Notes</h2>
+        <label>Shown at the bottom of the bill<textarea data-bill="notes" rows="4" placeholder="Thank you for your business!"></textarea></label>
+      </section>
+      <section class="card totals">
+        <h2>Total</h2>
+        <div class="row"><span>Subtotal</span><b id="tSub">₹0.00</b></div>
+        <div class="row field">
+          <span>Discount</span>
+          <span class="pair">
+            <input data-bill="discount" type="number" min="0" step="any" inputmode="decimal" placeholder="0">
+            <select data-bill="discountType" aria-label="Discount type"><option value="amt">₹</option><option value="pct">%</option></select>
+          </span>
+        </div>
+        <div class="row field">
+          <span>GST</span>
+          <span class="pair">
+            <input data-bill="tax" type="number" min="0" step="any" inputmode="decimal" placeholder="0">
+            <span class="unit">%</span>
+          </span>
+        </div>
+        <div class="row field" id="taxModeRow" hidden>
+          <span>GST type</span>
+          <select data-bill="taxMode" class="mode"><option value="split">CGST + SGST</option><option value="igst">IGST</option></select>
+        </div>
+        <div class="row sub" id="tTaxRow" hidden><span id="tTaxLabel">GST</span><b id="tTax">₹0.00</b></div>
+        <div class="row grand"><span>Grand total</span><b id="tGrand">₹0.00</b></div>
+        <p class="words" id="tWords"></p>
+        <div class="row field">
+          <span>Amount paid</span>
+          <span class="pair"><input data-bill="paid" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><span class="unit">₹</span></span>
+        </div>
+        <div class="row sub" id="tDueRow" hidden><span>Balance due</span><b id="tDue">₹0.00</b></div>
+      </section>
+    </div>
+
+    <section class="card" id="historyCard" hidden>
+      <h2>Recent bills</h2>
+      <p class="hint">Bills you downloaded on this device. Open one to edit or download it again.</p>
+      <ul class="history" id="history"></ul>
+    </section>
+  </main>
+
+  <div class="bar">
+    <span>Total <b id="barTotal">₹0.00</b></span>
+    <button type="button" class="btn primary" id="download2">Download PDF</button>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <template id="itemTpl">
+    <li class="item">
+      <span class="num"></span>
+      <label class="desc"><span class="sr">Description</span><input data-f="desc" placeholder="Item or service"></label>
+      <label class="qty"><span class="lbl">Qty</span><input data-f="qty" type="number" min="0" step="any" inputmode="decimal"></label>
+      <label class="unit-f"><span class="lbl">Unit</span><input data-f="unit" placeholder="pcs" list="units"></label>
+      <label class="rate"><span class="lbl">Rate ₹</span><input data-f="rate" type="number" min="0" step="any" inputmode="decimal" placeholder="0.00"></label>
+      <span class="amt"></span>
+      <button type="button" class="del" aria-label="Remove item" title="Remove item">×</button>
+    </li>
+  </template>
+  <datalist id="units"><option>pcs</option><option>nos</option><option>hrs</option><option>days</option><option>kg</option><option>m</option><option>set</option><option>month</option></datalist>
+
+  <script src="assets/vendor/jspdf.umd.min.js" defer></script>
+  <script src="assets/vendor/jspdf.plugin.autotable.min.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
